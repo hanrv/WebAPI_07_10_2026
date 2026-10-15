@@ -57,6 +57,57 @@ namespace WebAPI_07_10_2026.Controllers
             ordenes.Remove(ordenEncontrada);
             return Ok($"La orden con ID {id} fue eliminada.");
         }
+
+        // Demostración de error de cliente (400 Bad Request)
+        // Ruta: POST /api/ordenes/error-cliente
+        [HttpPost("error-cliente")]
+        public ActionResult ErrorCliente([FromBody] Orden? orden)
+        {
+            // Validación: si no enviamos datos o falta ClienteId
+            if (orden == null || orden.ClienteId <= 0)
+            {
+                return BadRequest(new
+                {
+                    error = "Error de cliente (400)",
+                    mensaje = "El ClienteId es requerido y debe ser mayor a 0.",
+                    detalles = "Datos inválidos enviados desde el cliente."
+                });
+            }
+
+            if (orden.Productos == null || orden.Productos.Count == 0)
+            {
+                return BadRequest(new
+                {
+                    error = "Error de cliente (400)",
+                    mensaje = "La orden debe contener al menos 1 producto.",
+                    detalles = "Lista de productos vacía o nula."
+                });
+            }
+
+            return Ok(orden);
+        }
+
+        // Demostración de error de servidor (500 Internal Server Error)
+        // Ruta: POST /api/ordenes/error-servidor
+        [HttpPost("error-servidor")]
+        public ActionResult ErrorServidor([FromBody] Orden orden)
+        {
+            try
+            {
+                // Simulamos un error del servidor
+                throw new InvalidOperationException("Se ha producido un error crítico en el servidor al procesar la orden.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    error = "Error de servidor (500)",
+                    mensaje = ex.Message,
+                    detalles = "El servidor encontró una condición inesperada que le impidió cumplir la solicitud.",
+                    timestamp = DateTime.UtcNow
+                });
+            }
+        }
     }
 
     // Clases para modelar el JSON 
